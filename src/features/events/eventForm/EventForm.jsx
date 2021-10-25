@@ -3,14 +3,17 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useState } from "react/cjs/react.development";
 import { Button, Form, Header, Segment } from "semantic-ui-react";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { createEvent, updateEvent } from "../eventActions";
 
-export default function EventForm({
-  setFormOpen,
-  // setEvents,
-  createEvent,
-  selectedEvent,
-  updateEvent,
-}) {
+export default function EventForm({ match, history }) {
+  const selectedEvent = useSelector((state) =>
+    state.event.events.find((e) => e.id === match.params.id)
+  );
+
+  const dispatch = useDispatch();
+
   const initialValues = selectedEvent ?? {
     title: "",
     category: "",
@@ -19,18 +22,21 @@ export default function EventForm({
     venue: "",
     date: "",
   };
+
   const [values, setValues] = useState(initialValues);
 
   function handleFormSubmit() {
     selectedEvent
-      ? updateEvent({ ...selectedEvent, ...values })
-      : createEvent({
-          ...values,
-          id: cuid(),
-          hostedBy: "Bob",
-          attendees: [],
-          hostPhotoURL: "/assets/user.png",
-        });
+      ? dispatch(updateEvent({ ...selectedEvent, ...values }))
+      : dispatch(
+          createEvent({
+            ...values,
+            id: cuid(),
+            hostedBy: "Bob",
+            attendees: [],
+            hostPhotoURL: "/assets/user.png",
+          }));
+          history.push('/events');
   }
 
   // function handleInputChange(e) {
@@ -108,7 +114,8 @@ export default function EventForm({
         </Form.Field>
         <Button type='submit' floated='right' positive content='Submit' />
         <Button
-          as={Link} to='/events'
+          as={Link}
+          to='/events'
           type='submit'
           floated='right'
           content='Cancel'
